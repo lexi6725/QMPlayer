@@ -170,23 +170,11 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
-     <width>461</width>
-     <height>181</height>
+     <y>0</y>
+     <width>451</width>
+     <height>211</height>
     </rect>
    </property>
-   <zorder>label_time_l</zorder>
-   <zorder>label_pbar</zorder>
-   <zorder>pushButton_stop</zorder>
-   <zorder>pushButton_next</zorder>
-   <zorder>pushButton_reward</zorder>
-   <zorder>pushButton_sound</zorder>
-   <zorder>spinBox</zorder>
-   <zorder>pushButton_forward</zorder>
-   <zorder>horizontalSlider</zorder>
-   <zorder>label_name</zorder>
-   <zorder>pushButton_play</zorder>
-   <zorder>pushButton_pre</zorder>
   </widget>
  </widget>
  <resources/>

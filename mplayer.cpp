@@ -63,7 +63,7 @@ MPlayer::MPlayer(QWidget *parent) :
     /***************初始化进度条及QProcess类**************************/
     ui->horizontalSlider->setPageStep(1);
     process     = new QProcess(this);
-   // process->setProcessChannelMode(QProcess::MergedChannels);
+    process->setProcessChannelMode(QProcess::MergedChannels);
 
     /***************初始化信号、slots**********************************/
     connect(ui->pushButton_play, SIGNAL(clicked()), this, SLOT(play_pause_slots()));
@@ -75,18 +75,19 @@ MPlayer::MPlayer(QWidget *parent) :
     connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(set_volume_slots(int)));
     connect(ui->pushButton_sound, SIGNAL(clicked()), this, SLOT(set_sound_slots()));
     connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(back_message_slots()));
-
+    connect(process, SIGNAL(started()),this, SLOT(mplayer_running_slots()));
+    connect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(state_change_slots()));
     // when process should read return info of Mplayer, produce readyReadStandardOutput()信号
     QString arg;
-    arg ="/usr/bin/mplayer ";
+    arg ="/usr/bin/mplayer";
     QString file_path;
     file_path = " /work/sound/";
     QStringList args;
-    args<<" -slave ";
-    args<<" -zoom ";
-    args<<" -quiet ";
-    args<<file_path+file_name;
-    args<<" -wid"+QString::number((ui->widget->winId()));
+    args<<"-slave";
+    args<<"-zoom";
+    args<<"-quiet";
+    args<<"/work/sound/a.mp4";
+    args<<" -wid "+QString::number((ui->widget->winId()));
     process->start(arg, args);     // 开始运行程序
     /*QString common = "mplayer -slave -zoom -quiet /work/sound/"+file_name+" -wid "+
             QString::number(ui->widget->winId());
@@ -101,8 +102,8 @@ MPlayer::MPlayer(QWidget *parent) :
     connect(timer, SIGNAL(timeout()), this, SLOT(get_time_slots()));
     // 定时获取MPlayer的时间信息
     timer->start(1000);// 启动定时器1秒timeout 1次
-    ui->label_pbar->setText("00:00:00");
-    ui->label_time_l->setText("00:00:00");
+    //ui->label_pbar->setText("00:00:00");
+    //ui->label_time_l->setText("00:00:00");
     qDebug()<<"Init Success";
 }
 
@@ -118,9 +119,9 @@ void MPlayer::play_pause_slots()
     {
         if(isStop)
         {
-            file_name   = files[file_count];
+            file_name   = files[2];
             QString common = "mplayer -slave  -quiet /work/sound"+file_name+"-wid"+
-                    QString::number(ui->widget->winId());
+                    QString::number(ui->widget->winId())+'\n';
             process->start((common));
             ui->pushButton_stop->setIcon(QIcon(":/images/stop_enabbled.ico"));
             isStop  = false;
@@ -172,7 +173,7 @@ void MPlayer::previous_slots()
         {
             file_name   = files[file_count];
             QString common = "mplayer -slave -quiet  /work/sound"+file_name+"-wid" +
-                    QString::number(ui->widget->winId());
+                    QString::number(ui->widget->winId())+'\n';
             process->start(common);
         }
         if (file_count == 2)
@@ -193,14 +194,15 @@ void MPlayer::next_slots()
             ui->pushButton_pre->setIcon(QIcon(":/images/previous_enabled.ico"));
         }
         process->write("quit\n");
+        process->close();
         process = new QProcess(this);
         connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(back_message_slots()));
         file_count++;
         if(!isStop)
         {
             file_name   = files[file_count];
-            QString common = "mplayer -slave /work/sound/"+file_name+"-wid"+
-                    QString::number(ui->widget->winId());
+            QString common = "mplayer -slave /work/sound/"+file_name+"-wid "+
+                    QString::number(ui->widget->winId())+'\n';
             process->start(common);
         }
         if(file_count == (files.size()-1))
@@ -225,10 +227,10 @@ void MPlayer::get_time_slots()
     qDebug()<<"time_slots";
     if(isPlay)
     {
-        process->write("get_time_pos\n");
         process->write("get_time_length\n");
+        process->write("get_time_pos\n");
+        qDebug()<<"get_time";
     }
-    qDebug()<<"time slots";
 }
 
 void MPlayer::set_volume_slots(int volume)
@@ -241,13 +243,13 @@ void MPlayer::set_sound_slots()
 {
     if(isSound)
     {
-        process->write("mute 1/n");
+        process->write("mute 1\n");
         ui->pushButton_sound->setIcon(QIcon(":/images/sound_enabled.png"));
         isSound = false;
     }
     else
     {
-        process->write("mute 0/n");
+        process->write("mute 0\n");
         ui->pushButton_sound->setIcon(QIcon(":/images/sound_enabled.png"));
         isSound = true;
     }
@@ -272,14 +274,13 @@ void MPlayer::back_message_slots()
     {
         QString message(process->readLine());
         QStringList message_list = message.split("=");
-        qDebug()<<message_list[0];
-        qDebug()<<message_list[1];
         if(message_list[0] == "ANS_TIME_POSITION")
         {
             curr_time = message_list[1].toDouble();
             QTime time = int_to_time(curr_time);
             ui->label_pbar->setText(time.toString("hh:mm:ss"));
             ui->horizontalSlider->setValue(100*curr_time/file_length);
+            //ui->horizontalSlider->setValue(100*14/);
             qDebug()<<"ANS_TIME_POSITION";
         }
         else if (message_list[0] == "ANS_LENGTH")
@@ -291,6 +292,18 @@ void MPlayer::back_message_slots()
         }
         qDebug()<<"Message";
     }
+}
+
+void MPlayer::mplayer_running_slots()
+{
+    qDebug()<<"MPlayer started";
+    qDebug()<<QString::number(process->state()).toLatin1();
+
+}
+
+void MPlayer::state_change_slots()
+{
+    qDebug()<<"MPlayer state change";
 }
 
 QTime MPlayer::int_to_time(int second)

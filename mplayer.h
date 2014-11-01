@@ -36,6 +36,8 @@ public slots:
     void playerReward_slots();  // 快退
     void playerForward_slots();     // 快进
     void back_message_slots();      // 更新显示信息
+    void mplayer_running_slots();
+    void state_change_slots();
 
 private:
     Ui::MPlayer *ui;
