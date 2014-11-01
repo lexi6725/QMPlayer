@@ -87,7 +87,7 @@ MPlayer::MPlayer(QWidget *parent) :
     args<<"-zoom";
     args<<"-quiet";
     args<<"/work/sound/a.mp4";
-    args<<" -wid "+QString::number((ui->widget->winId()));
+    args<<" -wid"+QString::number((ui->widget->winId()));
     process->start(arg, args);     // 开始运行程序
     /*QString common = "mplayer -slave -zoom -quiet /work/sound/"+file_name+" -wid "+
             QString::number(ui->widget->winId());
