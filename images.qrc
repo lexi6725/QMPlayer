@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/forward_enabled.ico</file>
+        <file>images/next_enabled.ico</file>
+        <file>images/pause_enabled.ico</file>
+        <file>images/play_enabled.ico</file>
+        <file>images/previous_enabled.ico</file>
+        <file>images/reward_enabled.ico</file>
+        <file>images/sound_enabled.png</file>
+        <file>images/stop_enabled.ico</file>
+    </qresource>
+</RCC>
